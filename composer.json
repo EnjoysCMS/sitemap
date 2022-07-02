@@ -1,9 +1,10 @@
 {
     "name": "enjoyscms/sitemap",
+    "type": "enjoyscms-module",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "EnjoysCMS\\Sitemap\\": "src/"
+            "EnjoysCMS\\Module\\Sitemap\\": "src/"
         }
     },
     "authors": [
