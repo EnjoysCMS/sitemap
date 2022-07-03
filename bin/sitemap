@@ -1,12 +1,15 @@
 #!/usr/bin/env php
 <?php
 
+use EnjoysCMS\Module\Sitemap\Command\Generate;
+use EnjoysCMS\Module\Sitemap\Command\Status;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Application;
 
 $autoloadPaths = array(
-    __DIR__ . '/../../../vendor/autoload.php',
-    __DIR__ . '/../vendor/autoload.php',
-    __DIR__ . '/vendor/autoload.php'
+    __DIR__ . '/../../../bootstrap.php',
+    __DIR__ . '/../bootstrap.php',
+    __DIR__ . '/bootstrap.php'
 );
 foreach ($autoloadPaths as $autoloadFile) {
     if (file_exists($autoloadFile)) {
@@ -15,6 +18,11 @@ foreach ($autoloadPaths as $autoloadFile) {
     }
 }
 
-$application = new Application();
 
+$application = new Application();
+/** @var ContainerInterface $container */
+$application->addCommands([
+    $container->get(Generate::class),
+    $container->get(Status::class),
+]);
 $application->run();
