@@ -19,6 +19,10 @@ final class Status extends Command
 {
     public function execute(InputInterface $input, OutputInterface $output): int
     {
-        dd($input->getOptions());
+        $output->writeln('test');
+//        if (true){
+//            throw new \RuntimeException('test');
+//        }
+        return Command::SUCCESS;
     }
 }

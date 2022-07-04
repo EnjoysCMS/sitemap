@@ -1,6 +1,7 @@
 {
     "name": "enjoyscms/sitemap",
     "type": "enjoyscms-module",
+    "description": "",
     "license": "MIT",
     "autoload": {
         "psr-4": {
@@ -19,5 +20,13 @@
     },
     "bin": [
         "bin/sitemap"
-    ]
+    ],
+    "extra": {
+        "module-name": "Sitemap"
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            ">> sitemap.yml && sort -u -o sitemap.yml sitemap.yml"
+        ]
+    }
 }
