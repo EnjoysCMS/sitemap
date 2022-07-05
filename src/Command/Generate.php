@@ -9,14 +9,17 @@ namespace EnjoysCMS\Module\Sitemap\Command;
 use DI\Container;
 use DI\DependencyException;
 use DI\NotFoundException;
-use Enjoys\Config\Config;
-use EnjoysCMS\Module\Sitemap\SitemapGeneratorInterface;
+use EnjoysCMS\Core\Components\Modules\ModuleConfig;
+use EnjoysCMS\Module\Sitemap\Config;
+use EnjoysCMS\Module\Sitemap\Configuration;
+use EnjoysCMS\Module\Sitemap\SitemapCollectorInterface;
+use EnjoysCMS\Module\Sitemap\Url;
 use samdark\sitemap\Index;
+use samdark\sitemap\Sitemap;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Yaml\Yaml;
 
 #[AsCommand(
     name: 'generate',
@@ -24,7 +27,7 @@ use Symfony\Component\Yaml\Yaml;
 )]
 final class Generate extends Command
 {
-    private Config $config;
+    private ModuleConfig $configuration;
 
 
     /**
@@ -32,15 +35,10 @@ final class Generate extends Command
      * @throws NotFoundException
      * @throws \Exception
      */
-    public function __construct(private Container $container)
+    public function __construct(private Container $container, Configuration $configuration)
     {
         parent::__construct();
-        $this->config = $container->get(Config::class);
-        $this->config->addConfig(
-            $_ENV['PROJECT_DIR'] . '/sitemap.yml',
-            ['flags' => Yaml::PARSE_CONSTANT],
-            Config::YAML
-        );
+        $this->configuration = $configuration->getModuleConfig();
     }
 
     /**
@@ -49,23 +47,93 @@ final class Generate extends Command
      */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
-        $index = new Index($_ENV['PUBLIC_DIR'].'/sitemap.xml');
+        $this->validateConfiguration();
 
-        foreach ($this->config->getConfig() as $class => $params) {
+        $sitemap = new Sitemap($_ENV['PUBLIC_DIR'] . $this->configuration->get('filename'), true);
+        $sitemap->setMaxUrls($this->configuration->get('maxUrls'));
+        $sitemap->setUseGzip($this->configuration->get('useGzip') ?? false);
+        $sitemap->setMaxBytes($this->configuration->get('maxBytes') ?? 10*1024*1024);
+        $sitemap->setBufferSize($this->configuration->get('bufferSize') ?? 10);
+        $sitemap->setUseIndent($this->configuration->get('useIndent') ?? false);
+
+        if ($this->configuration->get('stylesheet') !== null){
+            $sitemap->setStylesheet($this->configuration->get('stylesheet'));
+        }
 
 
-            if (!class_exists($class) || !class_implements($class)){
+       // dd($sitemap);
+        foreach ($this->configuration->get('collectors') as $class) {
+            $params = [];
+
+            if (is_array($class)) {
+                $params = (array)current($class);
+                $class = key($class);
+            }
+
+            if (!class_exists($class)) {
+                $output->writeln(sprintf('%s - Skip', $class), OutputInterface::VERBOSITY_VERBOSE);
                 continue;
             }
-            /** @var SitemapGeneratorInterface $generator */
-            $generator = $this->container->make($class, (array)$params);
-            $urls = $generator->make();
-            foreach ($urls as $url) {
-                $index->addSitemap($url);
+            /** @var SitemapCollectorInterface $generator */
+            $generator = $this->container->make($class, $params);
+            $generator->setBaseUrl($this->configuration->get('baseUrl'));
+            /** @var Url $url */
+            foreach ($generator->make() as $url) {
+                $sitemap->addItem(
+                    $url->getLoc(),
+                    $url->getModified()?->getTimestamp(),
+                    $url->getFrequency(),
+                    $url->getPriority()
+                );
+                $output->writeln(sprintf('%s - Added', $url->getLoc()), OutputInterface::VERBOSITY_DEBUG);
+            }
+
+            $output->writeln(sprintf('%s - OK', $generator::class), OutputInterface::VERBOSITY_VERBOSE);
+        }
+
+        $sitemap->write();
+
+        $sitemaps = $sitemap->getSitemapUrls(rtrim($this->configuration->get('baseUrl'), '/') . '/');
+
+        foreach (
+            array_diff(
+                glob($_ENV['PUBLIC_DIR'] . str_replace('.xml', '*.xml', $this->configuration->get('filename'))),
+                $sitemap->getWrittenFilePath()
+            ) as $item
+        ) {
+            @unlink($item);
+        }
+
+
+        if (count($sitemaps) > 1) {
+            $index = new Index(
+                $_ENV['PUBLIC_DIR'] . str_replace('.xml', '_index.xml', $this->configuration->get('filename'))
+            );
+            $output->writeln('Writing sitemap index', OutputInterface::VERBOSITY_VERBOSE);
+            foreach ($sitemaps as $sitemapUrl) {
+                $index->addSitemap($sitemapUrl);
+                $output->writeln(sprintf('%s - Added', $sitemapUrl), OutputInterface::VERBOSITY_DEBUG);
             }
             $index->write();
-            $output->writeln(sprintf('%s - OK', $generator::class));
         }
+
+
         return Command::SUCCESS;
+    }
+
+    private function validateConfiguration()
+    {
+        if (!in_array(
+            strpos((string)$this->configuration->get('baseUrl'), '://'),
+            [4, 5],
+            true
+        )) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'baseUrl is not correct [%s] Need url with scheme: http or https',
+                    $this->configuration->get('baseUrl')
+                )
+            );
+        }
     }
 }

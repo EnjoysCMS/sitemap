@@ -25,8 +25,5 @@
         "module-name": "Sitemap"
     },
     "scripts": {
-        "post-autoload-dump": [
-            ">> sitemap.yml && sort -u -o sitemap.yml sitemap.yml"
-        ]
     }
 }
