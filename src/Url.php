@@ -21,9 +21,9 @@ final class Url
         return $this->loc;
     }
 
-    public function getModified(): ?\DateTimeInterface
+    public function getModified(): ?int
     {
-        return $this->modified;
+        return $this->modified?->getTimestamp();
     }
 
     public function getFrequency()

@@ -81,7 +81,7 @@ final class Generate extends Command
             foreach ($generator->make() as $url) {
                 $sitemap->addItem(
                     $url->getLoc(),
-                    $url->getModified()?->getTimestamp(),
+                    $url->getModified(),
                     $url->getFrequency(),
                     $url->getPriority()
                 );
