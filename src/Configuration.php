@@ -6,20 +6,26 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Sitemap;
 
 
+use DI\DependencyException;
+use DI\FactoryInterface;
+use DI\NotFoundException;
 use EnjoysCMS\Core\Components\Modules\ModuleConfig;
-use Psr\Container\ContainerInterface;
 
 final class Configuration
 {
-    private ModuleConfig $moduleConfig;
+    private ModuleConfig $config;
 
-    public function __construct(ContainerInterface $container)
+    /**
+     * @throws DependencyException
+     * @throws NotFoundException
+     */
+    public function __construct(FactoryInterface $factory)
     {
-        $this->moduleConfig = new ModuleConfig('enjoyscms/sitemap', $container);
+        $this->config = $factory->make(ModuleConfig::class, ['moduleName' => 'enjoyscms/sitemap']);
     }
 
     public function getModuleConfig(): ModuleConfig
     {
-        return $this->moduleConfig;
+        return $this->config;
     }
 }
