@@ -56,12 +56,10 @@ final class Generate extends Command
         $sitemap->setBufferSize($this->configuration->get('bufferSize') ?? 10);
         $sitemap->setUseIndent($this->configuration->get('useIndent') ?? false);
 
-        if ($this->configuration->get('stylesheet') !== null){
-            $sitemap->setStylesheet($this->configuration->get('stylesheet'));
+        if (null !== $stylesheet = $this->configuration->get('stylesheet')) {
+            $sitemap->setStylesheet(implode('', (array)$stylesheet));
         }
 
-
-       // dd($sitemap);
         foreach ($this->configuration->get('collectors') as $class) {
             $params = [];
 
