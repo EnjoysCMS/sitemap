@@ -16,7 +16,8 @@
     ],
     "require": {
         "php": ">=8.0",
-        "samdark/sitemap": "^2.4"
+        "samdark/sitemap": "^2.4",
+        "symfony/console": "^5.4 | ^6.0"
     },
     "bin": [
         "bin/sitemap"
