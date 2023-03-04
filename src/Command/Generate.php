@@ -10,7 +10,6 @@ use DI\Container;
 use DI\DependencyException;
 use DI\NotFoundException;
 use EnjoysCMS\Core\Components\Modules\ModuleConfig;
-use EnjoysCMS\Module\Sitemap\Config;
 use EnjoysCMS\Module\Sitemap\Configuration;
 use EnjoysCMS\Module\Sitemap\SitemapCollectorInterface;
 use EnjoysCMS\Module\Sitemap\Url;
@@ -30,11 +29,7 @@ final class Generate extends Command
     private ModuleConfig $configuration;
 
 
-    /**
-     * @throws DependencyException
-     * @throws NotFoundException
-     * @throws \Exception
-     */
+
     public function __construct(private Container $container, Configuration $configuration)
     {
         parent::__construct();
@@ -119,7 +114,7 @@ final class Generate extends Command
         return Command::SUCCESS;
     }
 
-    private function validateConfiguration()
+    private function validateConfiguration(): void
     {
         if (!in_array(
             strpos((string)$this->configuration->get('baseUrl'), '://'),

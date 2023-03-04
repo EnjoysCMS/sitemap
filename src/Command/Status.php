@@ -6,7 +6,10 @@ declare(strict_types=1);
 namespace EnjoysCMS\Module\Sitemap\Command;
 
 
+use DateTimeImmutable;
+use EnjoysCMS\Core\Components\Modules\ModuleConfig;
 use EnjoysCMS\Module\Sitemap\Configuration;
+use Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -19,12 +22,17 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 final class Status extends Command
 {
+    private ModuleConfig $configuration;
+
     public function __construct(Configuration $configuration)
     {
         parent::__construct();
         $this->configuration = $configuration->getModuleConfig();
     }
 
+    /**
+     * @throws Exception
+     */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
 
@@ -33,7 +41,7 @@ final class Status extends Command
         );
 
         if (empty($sitemaps)){
-            throw new \Exception('Sitemaps not found');
+            throw new Exception('Sitemaps not found');
         }
 
         $table = new Table($output);
@@ -43,7 +51,7 @@ final class Status extends Command
         ) {
             $table->setRow($i, [
                 str_replace($_ENV['PUBLIC_DIR'], '', $item),
-                (new \DateTimeImmutable('@'.stat($item)['mtime']))->format('d-m-Y H:i:s')
+                (new DateTimeImmutable('@'.stat($item)['mtime']))->format('d-m-Y H:i:s')
             ]);
 
         }

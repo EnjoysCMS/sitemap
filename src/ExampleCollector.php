@@ -30,7 +30,7 @@ class ExampleCollector implements SitemapCollectorInterface
         ];
     }
 
-    public function setBaseUrl(string $baseUrl)
+    public function setBaseUrl(string $baseUrl): void
     {
         $this->urlGenerator->getContext()->setBaseUrl($baseUrl);
     }
