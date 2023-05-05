@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-
 namespace EnjoysCMS\Module\Sitemap;
 
-
+use DateTimeImmutable;
+use Generator;
 use samdark\sitemap\Sitemap;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -19,7 +19,7 @@ class ExampleCollector implements SitemapCollectorInterface
         $this->routeNames = [
             'system/index' => [
                 'frequency' => Sitemap::DAILY,
-                'modified' => new \DateTimeImmutable()
+                'modified' => new DateTimeImmutable()
             ],
             'system/login' => [
                 'parameters' => [
@@ -30,17 +30,15 @@ class ExampleCollector implements SitemapCollectorInterface
         ];
     }
 
-    public function setBaseUrl(string $baseUrl): void
+    public function make(): Generator
     {
-        $this->urlGenerator->getContext()->setBaseUrl($baseUrl);
-    }
-
-    public function make(): \Generator
-    {
-
         foreach ($this->routeNames as $routeName => $params) {
-              yield new Url(
-                loc: $this->urlGenerator->generate($routeName, $params['parameters'] ?? [], UrlGeneratorInterface::ABSOLUTE_URL),
+            yield new Url(
+                loc: $this->urlGenerator->generate(
+                    $routeName,
+                    $params['parameters'] ?? [],
+                    UrlGeneratorInterface::ABSOLUTE_URL
+                ),
                 modified: $params['modified'] ?? null,
                 frequency: $params['frequency'] ?? null,
                 priority: $params['priority'] ?? null

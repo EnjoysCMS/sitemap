@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-
 namespace EnjoysCMS\Module\Sitemap;
-
 
 use DI\DependencyException;
 use DI\FactoryInterface;

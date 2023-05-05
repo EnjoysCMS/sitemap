@@ -2,21 +2,15 @@
 
 declare(strict_types=1);
 
-
 namespace EnjoysCMS\Module\Sitemap\Command;
 
-
-use DI\Container;
 use DI\DependencyException;
 use DI\FactoryInterface;
 use DI\NotFoundException;
-use EnjoysCMS\Core\Components\Modules\ModuleConfig;
 use EnjoysCMS\Module\Sitemap\Config;
 use EnjoysCMS\Module\Sitemap\SitemapCollectorInterface;
 use EnjoysCMS\Module\Sitemap\Url;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
+use InvalidArgumentException;
 use samdark\sitemap\Index;
 use samdark\sitemap\Sitemap;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -32,11 +26,13 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 final class Generate extends Command
 {
 
-    public function __construct(private FactoryInterface $factory, UrlGeneratorInterface $urlGenerator, private Config $config)
-    {
+    public function __construct(
+        private FactoryInterface $factory,
+        UrlGeneratorInterface $urlGenerator,
+        private Config $config
+    ) {
         parent::__construct();
         $urlGenerator->getContext()->setBaseUrl($this->config->get('baseUrl'));
-
     }
 
     /**
@@ -50,7 +46,7 @@ final class Generate extends Command
         $sitemap = new Sitemap($_ENV['PUBLIC_DIR'] . $this->config->get('filename'), true);
         $sitemap->setMaxUrls($this->config->get('maxUrls'));
         $sitemap->setUseGzip($this->config->get('useGzip', false));
-        $sitemap->setMaxBytes($this->config->get('maxBytes', 10*1024*1024));
+        $sitemap->setMaxBytes($this->config->get('maxBytes', 10 * 1024 * 1024));
         $sitemap->setBufferSize($this->config->get('bufferSize', 10));
         $sitemap->setUseIndent($this->config->get('useIndent', false));
 
@@ -124,7 +120,7 @@ final class Generate extends Command
             [4, 5],
             true
         )) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 sprintf(
                     'baseUrl is not correct [%s] Need url with scheme: http or https',
                     $this->config->get('baseUrl')

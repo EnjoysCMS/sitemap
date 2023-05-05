@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-
 namespace EnjoysCMS\Module\Sitemap\Command;
 
-
 use DateTimeImmutable;
-use EnjoysCMS\Core\Components\Modules\ModuleConfig;
 use EnjoysCMS\Module\Sitemap\Config;
 use Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -22,12 +19,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 final class Status extends Command
 {
-    private ModuleConfig $configuration;
 
-    public function __construct(Config $configuration)
+    public function __construct(private Config $config)
     {
         parent::__construct();
-        $this->configuration = $configuration->getModuleConfig();
     }
 
     /**
@@ -35,25 +30,23 @@ final class Status extends Command
      */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
-
         $sitemaps = glob(
-            $_ENV['PUBLIC_DIR'] . str_replace('.xml', '*.xml', $this->configuration->get('filename'))
+            $_ENV['PUBLIC_DIR'] . str_replace('.xml', '*.xml', $this->config->get('filename'))
         );
 
-        if (empty($sitemaps)){
+        if (empty($sitemaps)) {
             throw new Exception('Sitemaps not found');
         }
 
         $table = new Table($output);
         $table->setHeaders(['Filename', 'Created Date']);
         foreach (
-            $sitemaps   as $i => $item
+            $sitemaps as $i => $item
         ) {
             $table->setRow($i, [
                 str_replace($_ENV['PUBLIC_DIR'], '', $item),
-                (new DateTimeImmutable('@'.stat($item)['mtime']))->format('d-m-Y H:i:s')
+                (new DateTimeImmutable('@' . stat($item)['mtime']))->format('d-m-Y H:i:s')
             ]);
-
         }
         $table->setStyle('borderless');
         $table->render();

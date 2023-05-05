@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-
 namespace EnjoysCMS\Module\Sitemap;
 
+use DateTimeInterface;
 
 final class Url
 {
     public function __construct(
         private string $loc,
-        private ?\DateTimeInterface $modified = null,
+        private ?DateTimeInterface $modified = null,
         private $frequency = null,
         private $priority = null
     ) {
