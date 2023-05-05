@@ -11,5 +11,8 @@ interface SitemapCollectorInterface
 
     public function make();
 
+    /**
+     * @deprecated remove in 2.0
+     */
     public function setBaseUrl(string $baseUrl);
 }
