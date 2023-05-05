@@ -11,7 +11,7 @@ use DI\FactoryInterface;
 use DI\NotFoundException;
 use EnjoysCMS\Core\Components\Modules\ModuleConfig;
 
-final class Configuration
+final class Config
 {
     private ModuleConfig $config;
 
@@ -24,8 +24,13 @@ final class Configuration
         $this->config = $factory->make(ModuleConfig::class, ['moduleName' => 'enjoyscms/sitemap']);
     }
 
-    public function getModuleConfig(): ModuleConfig
+    public function all(): ModuleConfig
     {
         return $this->config;
+    }
+
+    public function get(string $key, $default = null): mixed
+    {
+        return $this->config->get($key, $default);
     }
 }

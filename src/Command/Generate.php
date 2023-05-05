@@ -8,17 +8,22 @@ namespace EnjoysCMS\Module\Sitemap\Command;
 
 use DI\Container;
 use DI\DependencyException;
+use DI\FactoryInterface;
 use DI\NotFoundException;
 use EnjoysCMS\Core\Components\Modules\ModuleConfig;
-use EnjoysCMS\Module\Sitemap\Configuration;
+use EnjoysCMS\Module\Sitemap\Config;
 use EnjoysCMS\Module\Sitemap\SitemapCollectorInterface;
 use EnjoysCMS\Module\Sitemap\Url;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use samdark\sitemap\Index;
 use samdark\sitemap\Sitemap;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[AsCommand(
     name: 'generate',
@@ -26,14 +31,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 final class Generate extends Command
 {
-    private ModuleConfig $configuration;
 
-
-
-    public function __construct(private Container $container, Configuration $configuration)
+    public function __construct(private FactoryInterface $factory, UrlGeneratorInterface $urlGenerator, private Config $config)
     {
         parent::__construct();
-        $this->configuration = $configuration->getModuleConfig();
+        $urlGenerator->getContext()->setBaseUrl($this->config->get('baseUrl'));
+
     }
 
     /**
@@ -44,18 +47,18 @@ final class Generate extends Command
     {
         $this->validateConfiguration();
 
-        $sitemap = new Sitemap($_ENV['PUBLIC_DIR'] . $this->configuration->get('filename'), true);
-        $sitemap->setMaxUrls($this->configuration->get('maxUrls'));
-        $sitemap->setUseGzip($this->configuration->get('useGzip') ?? false);
-        $sitemap->setMaxBytes($this->configuration->get('maxBytes') ?? 10*1024*1024);
-        $sitemap->setBufferSize($this->configuration->get('bufferSize') ?? 10);
-        $sitemap->setUseIndent($this->configuration->get('useIndent') ?? false);
+        $sitemap = new Sitemap($_ENV['PUBLIC_DIR'] . $this->config->get('filename'), true);
+        $sitemap->setMaxUrls($this->config->get('maxUrls'));
+        $sitemap->setUseGzip($this->config->get('useGzip', false));
+        $sitemap->setMaxBytes($this->config->get('maxBytes', 10*1024*1024));
+        $sitemap->setBufferSize($this->config->get('bufferSize', 10));
+        $sitemap->setUseIndent($this->config->get('useIndent', false));
 
-        if (null !== $stylesheet = $this->configuration->get('stylesheet')) {
+        if (null !== $stylesheet = $this->config->get('stylesheet')) {
             $sitemap->setStylesheet(implode('', (array)$stylesheet));
         }
 
-        foreach ($this->configuration->get('collectors') as $class) {
+        foreach ($this->config->get('collectors') as $class) {
             $params = [];
 
             if (is_array($class)) {
@@ -68,8 +71,8 @@ final class Generate extends Command
                 continue;
             }
             /** @var SitemapCollectorInterface $generator */
-            $generator = $this->container->make($class, $params);
-            $generator->setBaseUrl($this->configuration->get('baseUrl'));
+            $generator = $this->factory->make($class, $params);
+
             /** @var Url $url */
             foreach ($generator->make() as $url) {
                 $sitemap->addItem(
@@ -86,11 +89,11 @@ final class Generate extends Command
 
         $sitemap->write();
 
-        $sitemaps = $sitemap->getSitemapUrls(rtrim($this->configuration->get('baseUrl'), '/') . '/');
+        $sitemaps = $sitemap->getSitemapUrls(rtrim($this->config->get('baseUrl'), '/') . '/');
 
         foreach (
             array_diff(
-                glob($_ENV['PUBLIC_DIR'] . str_replace('.xml', '*.xml', $this->configuration->get('filename'))),
+                glob($_ENV['PUBLIC_DIR'] . str_replace('.xml', '*.xml', $this->config->get('filename'))),
                 $sitemap->getWrittenFilePath()
             ) as $item
         ) {
@@ -100,7 +103,7 @@ final class Generate extends Command
 
         if (count($sitemaps) > 1) {
             $index = new Index(
-                $_ENV['PUBLIC_DIR'] . str_replace('.xml', '_index.xml', $this->configuration->get('filename'))
+                $_ENV['PUBLIC_DIR'] . str_replace('.xml', '_index.xml', $this->config->get('filename'))
             );
             $output->writeln('Writing sitemap index', OutputInterface::VERBOSITY_VERBOSE);
             foreach ($sitemaps as $sitemapUrl) {
@@ -117,14 +120,14 @@ final class Generate extends Command
     private function validateConfiguration(): void
     {
         if (!in_array(
-            strpos((string)$this->configuration->get('baseUrl'), '://'),
+            strpos((string)$this->config->get('baseUrl'), '://'),
             [4, 5],
             true
         )) {
             throw new \InvalidArgumentException(
                 sprintf(
                     'baseUrl is not correct [%s] Need url with scheme: http or https',
-                    $this->configuration->get('baseUrl')
+                    $this->config->get('baseUrl')
                 )
             );
         }

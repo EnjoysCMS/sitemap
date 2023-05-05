@@ -8,7 +8,7 @@ namespace EnjoysCMS\Module\Sitemap\Command;
 
 use DateTimeImmutable;
 use EnjoysCMS\Core\Components\Modules\ModuleConfig;
-use EnjoysCMS\Module\Sitemap\Configuration;
+use EnjoysCMS\Module\Sitemap\Config;
 use Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -24,7 +24,7 @@ final class Status extends Command
 {
     private ModuleConfig $configuration;
 
-    public function __construct(Configuration $configuration)
+    public function __construct(Config $configuration)
     {
         parent::__construct();
         $this->configuration = $configuration->getModuleConfig();
