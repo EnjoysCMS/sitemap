@@ -4,31 +4,13 @@ declare(strict_types=1);
 
 namespace EnjoysCMS\Module\Sitemap;
 
-use DI\DependencyException;
-use DI\FactoryInterface;
-use DI\NotFoundException;
-use EnjoysCMS\Core\Components\Modules\ModuleConfig;
 
-final class Config
+use EnjoysCMS\Core\Modules\AbstractModuleConfig;
+
+final class Config extends AbstractModuleConfig
 {
-    private ModuleConfig $config;
-
-    /**
-     * @throws DependencyException
-     * @throws NotFoundException
-     */
-    public function __construct(FactoryInterface $factory)
+    public function getModulePackageName(): string
     {
-        $this->config = $factory->make(ModuleConfig::class, ['moduleName' => 'enjoyscms/sitemap']);
-    }
-
-    public function all(): ModuleConfig
-    {
-        return $this->config;
-    }
-
-    public function get(string $key, $default = null): mixed
-    {
-        return $this->config->get($key, $default);
+        return 'enjoyscms/sitemap';
     }
 }

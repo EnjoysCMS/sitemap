@@ -9,10 +9,10 @@ use DateTimeInterface;
 final class Url
 {
     public function __construct(
-        private string $loc,
-        private ?DateTimeInterface $modified = null,
-        private $frequency = null,
-        private $priority = null
+        private readonly string $loc,
+        private readonly ?DateTimeInterface $modified = null,
+        private readonly ?string $frequency = null,
+        private readonly ?string $priority = null
     ) {
     }
 
@@ -26,12 +26,12 @@ final class Url
         return $this->modified?->getTimestamp();
     }
 
-    public function getFrequency()
+    public function getFrequency(): ?string
     {
         return $this->frequency;
     }
 
-    public function getPriority()
+    public function getPriority(): ?string
     {
         return $this->priority;
     }

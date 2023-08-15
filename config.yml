@@ -1,4 +1,4 @@
-baseUrl: 'set baseUrl in /config.yml'
+baseUrl: 'set parameter `enjoyscms/sitemap->baseUrl` in /config.yml'
 filename: /sitemap.xml
 maxUrls: 50000 #Maximum allowed number of URLs in a single file.
 useGzip: false #Whether to gzip the resulting files or not

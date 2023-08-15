@@ -14,7 +14,7 @@ class ExampleCollector implements SitemapCollectorInterface
     protected array $routeNames;
 
 
-    public function __construct(private UrlGeneratorInterface $urlGenerator)
+    public function __construct(private readonly UrlGeneratorInterface $urlGenerator)
     {
         $this->routeNames = [
             'system/index' => [

@@ -27,9 +27,9 @@ final class Generate extends Command
 {
 
     public function __construct(
-        private FactoryInterface $factory,
+        private readonly FactoryInterface $factory,
         UrlGeneratorInterface $urlGenerator,
-        private Config $config
+        private readonly Config $config
     ) {
         parent::__construct();
         $urlGenerator->getContext()->setBaseUrl($this->config->get('baseUrl'));

@@ -20,7 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class Status extends Command
 {
 
-    public function __construct(private Config $config)
+    public function __construct(private readonly Config $config)
     {
         parent::__construct();
     }
