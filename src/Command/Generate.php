@@ -20,7 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[AsCommand(
-    name: 'generate',
+    name: 'sitemap:generate',
     description: 'Генерация sitemap.xml'
 )]
 final class Generate extends Command

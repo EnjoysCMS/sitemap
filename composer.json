@@ -21,7 +21,7 @@
         "enjoyscms/core": "^6.0@dev"
     },
     "bin": [
-        "bin/sitemap"
+        "bin/enjoys-sitemap"
     ],
     "extra": {
         "module-name": "Sitemap"
