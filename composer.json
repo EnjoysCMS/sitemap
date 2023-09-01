@@ -6,7 +6,7 @@
     "autoload": {
         "psr-4": {
             "EnjoysCMS\\Module\\Sitemap\\": "src/",
-            "EnjoysCMS\\Module\\Sitemap\\Install\\": "install/"
+            "EnjoysCMS\\Module\\Sitemap\\Composer\\Scripts\\": "scripts/"
         }
     },
     "authors": [
@@ -25,11 +25,10 @@
         "module-name": "Sitemap"
     },
     "scripts": {
+        "post-update-cmd": "@post-install-cmd",
+        "sitemap-register-console-commands": "EnjoysCMS\\Module\\Sitemap\\Composer\\Scripts\\ConsoleCommandsRegisterCommand",
         "post-install-cmd": [
-            "EnjoysCMS\\Module\\Sitemap\\Install\\Composer::registerCommands"
-        ],
-        "post-update-cmd": [
-            "EnjoysCMS\\Module\\Sitemap\\Install\\Composer::registerCommands"
+            "@sitemap-register-console-commands"
         ]
     }
 }
