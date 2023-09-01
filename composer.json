@@ -25,9 +25,11 @@
         "module-name": "Sitemap"
     },
     "scripts": {
-        "post-update-cmd": "@post-install-cmd",
         "sitemap-register-console-commands": "EnjoysCMS\\Module\\Sitemap\\Composer\\Scripts\\ConsoleCommandsRegisterCommand",
         "post-install-cmd": [
+            "@sitemap-register-console-commands"
+        ],
+        "post-update-cmd": [
             "@sitemap-register-console-commands"
         ]
     }
