@@ -12,7 +12,7 @@ final class Url
         private readonly string $loc,
         private readonly ?DateTimeInterface $modified = null,
         private readonly ?string $frequency = null,
-        private readonly ?string $priority = null
+        private readonly string|float|null $priority = null
     ) {
     }
 
@@ -31,7 +31,7 @@ final class Url
         return $this->frequency;
     }
 
-    public function getPriority(): ?string
+    public function getPriority(): string|float|null
     {
         return $this->priority;
     }
