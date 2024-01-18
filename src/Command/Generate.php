@@ -26,13 +26,16 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 final class Generate extends Command
 {
 
+    private string $baseUrl;
+
     public function __construct(
         private readonly FactoryInterface $factory,
         UrlGeneratorInterface $urlGenerator,
         private readonly Config $config
     ) {
         parent::__construct();
-        $urlGenerator->getContext()->setBaseUrl($this->config->get('baseUrl'));
+        $this->baseUrl = (string)$this->config->get('baseUrl');
+        $urlGenerator->getContext()->setBaseUrl($this->baseUrl);
     }
 
     /**
@@ -51,7 +54,11 @@ final class Generate extends Command
         $sitemap->setUseIndent($this->config->get('useIndent', false));
 
         if (null !== $stylesheet = $this->config->get('stylesheet')) {
-            $sitemap->setStylesheet(implode('', (array)$stylesheet));
+            try {
+                $sitemap->setStylesheet($stylesheet);
+            } catch (\InvalidArgumentException) {
+                $sitemap->setStylesheet($this->baseUrl . $stylesheet);
+            }
         }
 
         foreach ($this->config->get('collectors') as $class) {
@@ -115,14 +122,10 @@ final class Generate extends Command
 
     private function validateConfiguration(): void
     {
-        if (!in_array(
-            strpos((string)$this->config->get('baseUrl'), '://'),
-            [4, 5],
-            true
-        )) {
+        if (!preg_match('/^https?:\/\//', $this->baseUrl)) {
             throw new InvalidArgumentException(
                 sprintf(
-                    'baseUrl is not correct [%s] Need url with scheme: http or https',
+                    'baseUrl is not correct [%s] Need url with scheme: http:// or https://',
                     $this->config->get('baseUrl')
                 )
             );
