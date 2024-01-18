@@ -19,7 +19,8 @@ class ExampleCollector implements SitemapCollectorInterface
         $this->routeNames = [
             'system/index' => [
                 'frequency' => Sitemap::DAILY,
-                'modified' => new DateTimeImmutable()
+                'modified' => new DateTimeImmutable(),
+                'priority' => 1.0
             ],
             'system/login' => [
                 'parameters' => [
