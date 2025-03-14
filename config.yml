@@ -1,4 +1,4 @@
-baseUrl: %BASE_URL%
+#baseUrl: %BASE_URL%
 filename: /sitemap.xml
 maxUrls: 50000 #Maximum allowed number of URLs in a single file.
 useGzip: false #Whether to gzip the resulting files or not
