@@ -26,16 +26,11 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 final class Generate extends Command
 {
 
-    private string $baseUrl;
-
     public function __construct(
         private readonly FactoryInterface $factory,
-        UrlGeneratorInterface $urlGenerator,
         private readonly Config $config
     ) {
         parent::__construct();
-        $this->baseUrl = (string)$this->config->get('baseUrl');
-        $urlGenerator->getContext()->setBaseUrl($this->baseUrl);
     }
 
     /**
@@ -44,7 +39,16 @@ final class Generate extends Command
      */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->validateConfiguration();
+        $baseUrl = $this->config->get('baseUrl', 'http://localhost');
+
+        if (!preg_match('/^https?:\/\//', $baseUrl)) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'baseUrl is not correct [%s] Need url with scheme: http:// or https://',
+                    $baseUrl
+                )
+            );
+        }
 
         $sitemap = new Sitemap($_ENV['PUBLIC_DIR'] . $this->config->get('filename'), true);
         $sitemap->setMaxUrls($this->config->get('maxUrls'));
@@ -57,7 +61,7 @@ final class Generate extends Command
             try {
                 $sitemap->setStylesheet($stylesheet);
             } catch (\InvalidArgumentException) {
-                $sitemap->setStylesheet($this->baseUrl . $stylesheet);
+                $sitemap->setStylesheet($baseUrl . $stylesheet);
             }
         }
 
@@ -92,7 +96,7 @@ final class Generate extends Command
 
         $sitemap->write();
 
-        $sitemaps = $sitemap->getSitemapUrls(rtrim($this->config->get('baseUrl'), '/') . '/');
+        $sitemaps = $sitemap->getSitemapUrls(rtrim($baseUrl, '/') . '/');
 
         foreach (
             array_diff(
@@ -120,15 +124,5 @@ final class Generate extends Command
         return Command::SUCCESS;
     }
 
-    private function validateConfiguration(): void
-    {
-        if (!preg_match('/^https?:\/\//', $this->baseUrl)) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'baseUrl is not correct [%s] Need url with scheme: http:// or https://',
-                    $this->config->get('baseUrl')
-                )
-            );
-        }
-    }
+
 }
