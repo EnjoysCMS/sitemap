@@ -1,0 +1,6 @@
+{
+    "console": {
+        "EnjoysCMS\\Module\\Sitemap\\Command\\Generate": [],
+        "EnjoysCMS\\Module\\Sitemap\\Command\\Status": []
+    }
+}
